@@ -1,0 +1,16 @@
+[[source]]
+name = "pypi"
+verify_ssl = true
+url = "https://pypi.org/simple"
+
+[dev-packages]
+ipython = "*"
+"flake8" = "*"
+yapf = "*"
+
+[packages]
+pydicom = "*"
+faker = "*"
+
+[requires]
+python_version = "3.7"
