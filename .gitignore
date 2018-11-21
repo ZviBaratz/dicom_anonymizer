@@ -54,3 +54,9 @@ docs/_build/
 
 # Simulated data
 MRI/
+
+# Encryption key source
+secret.bin
+
+# DICOM Files
+**.dcm

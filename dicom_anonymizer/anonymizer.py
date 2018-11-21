@@ -4,11 +4,15 @@ import pydicom
 from pydicom.dataset import FileDataset
 from .tag_faker import TagFaker
 
-VALID_TAGS = ['PatientName']
+PATIENT_ID_TAG = 'PatientID'
+VALID_TAGS = [PATIENT_ID_TAG, 'PatientName']
 
 
 class Anonymizer:
-    def __init__(self, existing_subjects: dict = dict()):
+    def __init__(
+            self,
+            existing_subjects: dict = dict(),
+    ):
         self.existing_subjects = existing_subjects
         self.faker = TagFaker()
 
@@ -22,12 +26,12 @@ class Anonymizer:
         try:
             return self.existing_subjects[dcm.PatientID][tag_name]
         except KeyError:
-            if tag_name is 'PatientID':
+            if tag_name is PATIENT_ID_TAG:
                 new_value = self.faker.patient_id(self.existing_subjects)
             elif tag_name is 'PatientName':
                 new_value = self.faker.patient_name(dcm.PatientSex)
             else:
-                raise KeyError(
+                raise NotImplementedError(
                     f'Invalid DICOM tag name! Expected a value from:\n{VALID_TAGS}\nGot: {tag_name}'
                 )
             self.update_existing_subjects(dcm.PatientID,
@@ -39,10 +43,13 @@ class Anonymizer:
             dcm: FileDataset,
             tag_names: list = VALID_TAGS,
     ) -> FileDataset:
-        for tag_name in tag_names:
+        not_patient_id = [
+            tag for tag in tag_names if tag is not PATIENT_ID_TAG
+        ]
+        for tag_name in not_patient_id:
             anonymized_value = self.get_anonymized_value(dcm, tag_name)
             setattr(dcm, tag_name, anonymized_value)
-        anonymized_id = self.get_anonymized_value(dcm, 'PatientID')
+        anonymized_id = self.get_anonymized_value(dcm, PATIENT_ID_TAG)
         dcm.PatientID = anonymized_id
         return dcm
 

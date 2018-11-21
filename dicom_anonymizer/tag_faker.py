@@ -3,6 +3,15 @@ from .utils import random_with_n_digits
 
 
 class TagFaker:
+    METHOD_BY_TAG = {
+        'PatientID': 'patient_id',
+        'PatientName': 'patient_name',
+    }
+    VALID_TAGS = (
+        'PatientID',
+        'PatientName',
+    )
+
     def __init__(self, faker=Faker()):
         self.faker = faker
 
@@ -25,3 +34,13 @@ class TagFaker:
             while anonymized_id in existing_ids:
                 anonymized_id = str(random_with_n_digits(9))
         return anonymized_id
+
+    def fake(self, tag_name: str, **kwargs):
+        method_name = self.METHOD_BY_TAG[tag_name]
+        method = getattr(self, method_name)
+        if method:
+            return method(**kwargs)
+        else:
+            raise NotImplementedError(
+                f"TagFaker doesn't recognize {tag_name}.\nPlease choose from the following: {self.VALID_TAGS}"
+            )
