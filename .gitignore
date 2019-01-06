@@ -60,3 +60,6 @@ secret.bin
 
 # DICOM Files
 **.dcm
+
+# Virtual environment
+venv/
