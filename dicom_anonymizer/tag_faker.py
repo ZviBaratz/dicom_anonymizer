@@ -1,38 +1,31 @@
 from faker import Faker
-from .utils import random_with_n_digits
+from .utils import id_generator
 
 
 class TagFaker:
-    METHOD_BY_TAG = {
-        'PatientID': 'patient_id',
-        'PatientName': 'patient_name',
-    }
-    VALID_TAGS = (
-        'PatientID',
-        'PatientName',
-    )
+    METHOD_BY_TAG = {"PatientID": "patient_id", "PatientName": "patient_name"}
+    VALID_TAGS = ("PatientID", "PatientName")
 
     def __init__(self, faker=Faker()):
         self.faker = faker
 
     def patient_name(self, sex: str = None):
         f = self.faker
-        if sex is 'M':
-            return f'{f.last_name()}^{f.first_name_male()}'
-        elif sex is 'F':
-            return f'{f.last_name()}^{f.first_name_female()}'
+        if sex is "M":
+            return f"{f.last_name()}^{f.first_name_male()}"
+        elif sex is "F":
+            return f"{f.last_name()}^{f.first_name_female()}"
         else:
-            return f'{f.last_name()}^{f.first_name()}'
+            return f"{f.last_name()}^{f.first_name()}"
 
     def patient_id(self, existing_subjects: dict = {}):
-        anonymized_id = str(random_with_n_digits(9))
+        anonymized_id = id_generator()
         if existing_subjects:
             existing_ids = [
-                subject.get('PatientID')
-                for subject in existing_subjects.values()
+                subject.get("PatientID") for subject in existing_subjects.values()
             ]
             while anonymized_id in existing_ids:
-                anonymized_id = str(random_with_n_digits(9))
+                anonymized_id = id_generator()
         return anonymized_id
 
     def fake(self, tag_name: str, **kwargs):
