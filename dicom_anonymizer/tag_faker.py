@@ -20,12 +20,16 @@ class TagFaker:
 
     def patient_id(self, existing_subjects: dict = {}):
         anonymized_id = id_generator()
+
+        # Make sure the generated ID is really new
         if existing_subjects:
             existing_ids = [
                 subject.get("PatientID") for subject in existing_subjects.values()
             ]
+            # In case this ID is already taken, generate a new one
             while anonymized_id in existing_ids:
                 anonymized_id = id_generator()
+
         return anonymized_id
 
     def fake(self, tag_name: str, **kwargs):
