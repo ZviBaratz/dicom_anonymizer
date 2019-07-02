@@ -2,8 +2,10 @@ import os
 import pickle
 import pydicom
 
+from dicom_anonymizer.tag_faker import TagFaker
 from pydicom.dataset import FileDataset
-from .tag_faker import TagFaker
+from tqdm import tqdm
+
 
 PATIENT_ID_TAG = "PatientID"
 VALID_TAGS = [PATIENT_ID_TAG, "PatientName"]
@@ -74,12 +76,18 @@ class Anonymizer:
             path = self.create_dcm_path(dcm, dest)
             return self.save_dcm(dcm, path)
 
-    def anonymize_tree(self, path: str, dest: str):
-        for subdir, dirs, files in os.walk(path):
-            for f in files:
-                if f.endswith(".dcm"):
-                    path = os.path.join(subdir, f)
-                    self.anonymize_dcm(path, dest)
+    def anonymize_tree(self, path: str, dest: str, verbose: bool = True):
+        n_dcms = len(list(self.path_generator(path, "dcm")))
+        for dcm_path in tqdm(
+            self.path_generator(path, "dcm"), disable=not verbose, total=n_dcms
+        ):
+            self.anonymize_dcm(dcm_path, dest)
+        key_file_dest = os.path.join(dest, "key.pkl")
+        if verbose:
+            print(f"Saving associations to {key_file_dest}...", end="\t")
+        self.serialize_associations(key_file_dest)
+        if verbose:
+            print("done!")
 
     def serialize_associations(self, path: str) -> bool:
         with open(path, "wb") as key_file:
@@ -91,3 +99,10 @@ class Anonymizer:
             with open(path, "rb") as key_file:
                 return pickle.load(key_file)
         return dict()
+
+    def path_generator(self, path: str, extension: str = "") -> str:
+        for directory, _, files in os.walk(path):
+            if extension:
+                files = [f for f in files if f.endswith(f".{extension}")]
+            for file_name in files:
+                yield os.path.join(directory, file_name)
