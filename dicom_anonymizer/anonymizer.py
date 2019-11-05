@@ -92,7 +92,14 @@ class Anonymizer:
 
             # Anonymized patient name generation
             elif tag_name is "PatientName":
-                new_value = self.faker.patient_name(dcm.PatientSex)
+
+                # Try to generate a name matching the patient's sex
+                try:
+                    new_value = self.faker.patient_name(dcm.PatientSex)
+
+                # If the PatientSex tag is not defined, simply return a name
+                except AttributeError:
+                    new_value = self.faker.patient_name()
 
             # Otherwise, the tag is not valid
             else:
@@ -184,7 +191,7 @@ class Anonymizer:
             dcm.save_as(path)
             return True
         except Exception:
-            print(f"Failed to save DICOM datast to {path}!")
+            print(f"Failed to save DICOM dataset to {path}!")
             return False
 
     def anonymize_dcm(self, source: str, dest: str) -> bool:
@@ -209,13 +216,15 @@ class Anonymizer:
             Failure to read the FileDataset from the .dcm file.
         """
 
-        dcm = pydicom.dcmread(source)
-        if isinstance(dcm, FileDataset):
-            dcm = self.anonymize_dcm_dataset(dcm)
-            path = self.create_dcm_path(dcm, dest)
-            return self.save_dcm(dcm, path)
-        else:
-            raise TypeError(f"{source} is not a valid DICOM FileDataset!")
+        try:
+            dcm = pydicom.dcmread(source)
+        except pydicom.filereader.InvalidDicomError:
+            print(f"Failed to read {source}! Skipping...")
+            return False
+
+        dcm = self.anonymize_dcm_dataset(dcm)
+        path = self.create_dcm_path(dcm, dest)
+        return self.save_dcm(dcm, path)
 
     def anonymize_tree(self, path: str, dest: str, verbose: bool = True):
         """
@@ -253,3 +262,4 @@ class Anonymizer:
                 files = [f for f in files if f.endswith(f".{extension}")]
             for file_name in files:
                 yield os.path.join(directory, file_name)
+

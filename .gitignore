@@ -63,3 +63,6 @@ secret.bin
 
 # Virtual environment
 venv/
+
+# Excel files
+**.xlsx
