@@ -6,7 +6,6 @@ from dicom_anonymizer.tag_faker import TagFaker
 from pydicom.dataset import FileDataset
 from tqdm import tqdm
 
-
 PATIENT_ID_TAG = "PatientID"
 VALID_TAGS = [PATIENT_ID_TAG, "PatientName"]
 
@@ -108,14 +107,15 @@ class Anonymizer:
                 )
 
             # Update existing_subjects dictionary to include the generated anonymized information
-            self.update_existing_subjects(dcm.PatientID, **{tag_name: new_value})
+            self.update_existing_subjects(dcm.PatientID,
+                                          **{tag_name: new_value})
 
             # Re-run this method (this time the try block should succeed)
             return self.get_anonymized_value(dcm, tag_name)
 
-    def anonymize_dcm_dataset(
-        self, dcm: FileDataset, tag_names: list = VALID_TAGS
-    ) -> FileDataset:
+    def anonymize_dcm_dataset(self,
+                              dcm: FileDataset,
+                              tag_names: list = VALID_TAGS) -> FileDataset:
         """
         Anonymized DICOM image file header information.
         
@@ -133,7 +133,9 @@ class Anonymizer:
         """
 
         # Create a list of tags to anonymize other than the PatientID
-        not_patient_id = [tag for tag in tag_names if tag is not PATIENT_ID_TAG]
+        not_patient_id = [
+            tag for tag in tag_names if tag is not PATIENT_ID_TAG
+        ]
 
         # Iterate over the header tags that need to be anonymized
         for tag_name in not_patient_id:
@@ -165,9 +167,8 @@ class Anonymizer:
             Full path for the given DICOM image.
         """
 
-        return os.path.join(
-            dest, dcm.PatientID, dcm.SeriesInstanceUID, f"{dcm.InstanceNumber}.dcm"
-        )
+        return os.path.join(dest, dcm.PatientID, dcm.SeriesInstanceUID,
+                            f"{dcm.InstanceNumber}.dcm")
 
     def save_dcm(self, dcm: FileDataset, path: str) -> bool:
         """
@@ -262,4 +263,3 @@ class Anonymizer:
                 files = [f for f in files if f.endswith(f".{extension}")]
             for file_name in files:
                 yield os.path.join(directory, file_name)
-
