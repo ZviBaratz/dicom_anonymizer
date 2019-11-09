@@ -1,6 +1,8 @@
 import pandas as pd
 import warnings
 
+from dicom_anonymizer.dicom_handler import DicomHandler
+from dicom_anonymizer.tag_faker import TagFaker
 from pathlib import Path
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
@@ -16,6 +18,7 @@ class InformationTable:
     def __init__(self, data_file):
         self.data_file = self.validate_data_file(data_file)
         self.data = self.load_data()
+        self.faker = TagFaker()
 
     def validate_data_file(self, data_file) -> Path:
         if isinstance(data_file, str):
@@ -36,20 +39,25 @@ class InformationTable:
         else:
             return pd.DataFrame(columns=self.COLUMNS)
 
-    def get(self, id_value: str) -> pd.DataFrame:
-        return self.data[self.data[self.ID_INDEX] == id_value]
+    def get(self, id_value: str) -> pd.Series:
+        return self.data[self.data[self.ID_INDEX] == id_value].squeeze()
 
-    def add(self, row: pd.Series, save: bool = True) -> None:
+    def add(self, row: pd.Series, save: bool = True) -> pd.DataFrame:
         self.data = self.data.append(row, ignore_index=True)
         if save:
             self.save()
+        return self.data
 
     def save(self):
         df = self.data.set_index(
             self.INDEX_COLUMNS) if self.INDEX_COLUMNS else self.data
-        df.sort_index(inplace=True)
+        df = df.sort_index().drop('index', axis=1, errors='ignore')
         with pd.ExcelWriter(self.data_file) as writer:
             df.to_excel(writer, sheet_name=self.SHEET_NAME)
+
+    def get_or_create_from_dicom(self,
+                                 dicom_handler: DicomHandler) -> pd.Series:
+        raise NotImplementedError
 
     @property
     def index_col(self):

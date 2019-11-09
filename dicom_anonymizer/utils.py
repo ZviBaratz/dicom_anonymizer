@@ -1,12 +1,14 @@
+import os
 import random
 import string
 
 from datetime import datetime
+from pathlib import Path
 
 
 def random_with_n_digits(n: int):
-    range_start = 10 ** (n - 1)
-    range_end = (10 ** n) - 1
+    range_start = 10**(n - 1)
+    range_end = (10**n) - 1
     return random.randint(range_start, range_end)
 
 
@@ -21,12 +23,12 @@ def format_date(date_string: str) -> datetime.date:
 def format_time(time_string: str) -> datetime.time:
     """
     Parses Time (TM) data elements to time objects.
-    
+
     Parameters
     ----------
     element : DataElement
         DICOM Time (TM) data element.
-    
+
     Returns
     -------
     datetime.time
@@ -44,3 +46,10 @@ def format_time(time_string: str) -> datetime.time:
             except ValueError:
                 return None
 
+
+def path_generator(path: str, extension: str = "dcm") -> str:
+    for directory, _, files in os.walk(path):
+        if extension:
+            files = [f for f in files if f.endswith(f".{extension}")]
+        for file_name in files:
+            yield Path(directory, file_name)
