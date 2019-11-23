@@ -74,7 +74,7 @@ class DicomHandler:
     @property
     def scan_information(self) -> dict:
         return {
-            "Patient ID": self.dcm.PatientID,
+            # "Patient ID": self.dcm.PatientID,
             "Series Date": format_date(self.dcm.SeriesDate),
             "Series Number": int(self.dcm.SeriesNumber),
             "Series Time": format_time(self.dcm.SeriesTime),
