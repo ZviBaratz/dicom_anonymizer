@@ -58,13 +58,25 @@ class DicomHandler:
     @property
     def subject_information(self) -> dict:
         return {
-            "Patient ID": self.dcm.PatientID,
-            "First Name": self.dcm.PatientName.given_name,
-            "Last Name": self.dcm.PatientName.family_name,
-            "Sex": self.dcm.PatientSex,
-            "Height": float(self.dcm.PatientSize),
-            "Weight": int(self.dcm.PatientWeight),
-            "Birth Date": format_date(self.dcm.PatientBirthDate),
+            "Patient ID":
+            self.dcm.PatientID,
+            "First Name":
+            self.dcm.PatientName.given_name
+            if self.dcm.get('PatientName') else None,
+            "Last Name":
+            self.dcm.PatientName.family_name
+            if self.dcm.get('PatientName') else None,
+            "Sex":
+            self.dcm.get('PatientSex'),
+            "Height":
+            float(self.dcm.PatientSize)
+            if self.dcm.get('PatientSize') else None,
+            "Weight":
+            int(self.dcm.PatientWeight)
+            if self.dcm.get('PatientWeight') else None,
+            "Birth Date":
+            format_date(self.dcm.PatientBirthDate)
+            if self.dcm.get('PatientBirthDate') else None,
         }
 
     @property
@@ -75,13 +87,22 @@ class DicomHandler:
     def scan_information(self) -> dict:
         return {
             # "Patient ID": self.dcm.PatientID,
-            "Series Date": format_date(self.dcm.SeriesDate),
-            "Series Number": int(self.dcm.SeriesNumber),
-            "Series Time": format_time(self.dcm.SeriesTime),
-            "Series Description": self.dcm.SeriesDescription,
-            "Study Description": self.dcm.StudyDescription,
-            "Series UID": self.dcm.SeriesInstanceUID,
-            "Origin": os.path.dirname(self.path),
+            "Series Date":
+            format_date(self.dcm.SeriesDate)
+            if self.dcm.get('SeriesDate') else None,
+            "Series Number":
+            int(self.dcm.SeriesNumber),
+            "Series Time":
+            format_time(self.dcm.SeriesTime)
+            if self.dcm.get('SeriesTime') else None,
+            "Series Description":
+            self.dcm.get('SeriesDescription'),
+            "Study Description":
+            self.dcm.get('StudyDescription'),
+            "Series UID":
+            self.dcm.SeriesInstanceUID,
+            "Origin":
+            os.path.dirname(self.path),
         }
 
     @property
